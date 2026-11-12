@@ -1,0 +1,3 @@
+[submodule "AD/TransceiverToolbox"]
+	path = AD/TransceiverToolbox
+	url = https://github.com/analogdevicesinc/TransceiverToolbox.git

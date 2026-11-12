@@ -1,0 +1,13 @@
+# private / proprietary - never publish
+*.eml
+*.xlsx
+# large binaries / vendor images
+AD/mpm.exe
+AD/fmcomms5_boot/
+*.exe
+# MATLAB autosave / caches
+*.asv
+*.mat
+__pycache__/
+*.pyc
+slprj/

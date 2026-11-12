@@ -11,3 +11,4 @@ AD/fmcomms5_boot/
 __pycache__/
 *.pyc
 slprj/
+*.bin

@@ -28,7 +28,7 @@ adds, first on a **ZC706** carrier and then on a **ZCU102**.
 | `AD/soc_builder.m` | Minimal 4×TX / 4×RX configuration that switches the board into RF RX → RF TX loopback |
 | `AD/test.m` | Basic ZC706 + FMCOMMS5 check with ADI Transceiver Toolbox: 4-channel RX capture + TX tone |
 | `AD/TransceiverToolbox` | Submodule: [analogdevicesinc/TransceiverToolbox](https://github.com/analogdevicesinc/TransceiverToolbox) |
-| `demo/gen_ofdm16qam.m`, `demo/setup_mxg.py`, `demo/bridge_on.m`, `demo/vsa_wlan_evm.py` | EVM demo chain (see below) |
+| `demo/gen_ofdm16qam.m`, `demo/setup_mxg.py`, `demo/bridge_on.m`, `demo/vsa_wlan_evm.py`, `demo/phase_check.py` | EVM demo chain (see below) |
 | `demo/iio_net.py` | Dependency-free libiio **network** client (iiod text protocol, port 30431): read and write AD9361 attributes, debug attributes and registers from Windows with no libiio installed |
 
 Clone with `git clone --recursive`.
@@ -45,18 +45,24 @@ py demo/setup_mxg.py --freq 2e9 --pow -40
 matlab -batch "cd demo; bridge_on"          # env BOARD_IP, BRIDGE_FC, BRIDGE_RXG, BRIDGE_TXG
 # 4. VSA (scope selected as analyzer, SCPI enabled): 802.11a demod, EVM per scope channel
 py demo/vsa_wlan_evm.py --fc 2e9 --ch 1 2 3 4 --n 10 --leave 1
+# 5. optional: inter-channel phase / delay / gain, measured directly on the scope (VSA hands the scope over automatically)
+py demo/phase_check.py --scope TCPIP0::<SCOPE_IP>::hislip0::INSTR --n 10
 ```
 
-First result, 2026-11-12, ZC706 + FMCOMMS5, 2 GHz, MXG at -40 dBm through a 1:4 splitter, RX gain 31 dB (manual), TX attenuation -10 dB:
+Results, 2026-11-12: ZC706 + FMCOMMS5 at 2 GHz. MXG at -40 dBm through a 1:4 splitter (about -47 dBm per input), TX attenuation -10 dB.
 
-| Output | EVM (RMS over 10 frames) | Pilot EVM | IQ offset |
+| Scope | Output (input) | EVM, RX gain 31 dB | EVM, RX gain 36 dB (final) |
 |---|---|---|---|
-| TX1A_A | 2.90 % (-30.8 dB) | -34.6 dB | -20.9 dB |
-| TX2A_A | 2.56 % (-31.8 dB) | -33.6 dB | -23.7 dB |
-| TX1A_B | 2.81 % (-31.0 dB) | -34.1 dB | -21.2 dB |
-| TX2A_B | 2.66 % (-31.5 dB) | -33.3 dB | -24.8 dB |
+| CH1 | TX2A_B (RX2A_B) | 2.96 % | 1.97 % (-34.1 dB) |
+| CH2 | TX1A_B (RX1A_B) | 2.57 % | 2.03 % (-33.8 dB) |
+| CH3 | TX2A_A (RX2A_A) | 2.87 % | 1.96 % (-34.1 dB) |
+| CH4 | TX1A_A (RX1A_A) | 2.66 % | 2.06 % (-33.7 dB) |
 
-Frequency error is about 35 Hz on all outputs. The MXG-to-scope reference without the bridge has not been measured yet.
+* Reference with the MXG wired straight to the scope at the same scope level: 0.69 % (-43.2 dB), so the bridge adds about 1.9 % EVM.
+* RX gain sweep: 36 dB is the best setting. Below it, the TX LO leakage dominates; above about 43 dB, the TX path compresses.
+* Phase (`demo/phase_check.py`): the offset between the two paths of one chip is fixed (about -10 deg on chip B, about +14 deg on chip A).
+  The offset between chip A and chip B jumps in 90 deg steps on every LO retune, so it needs calibration after each tune.
+  RX1->TX1 runs one sample (32.7 ns) ahead of RX2->TX2 on both chips.
 
 `demo/setup_board.py` sets the same LO and `loopback=2` directly over iiod. With RX AGC on, however,
 it produced a large, signal-independent carrier, so use `bridge_on.m` (the MATLAB path) for measurements.
@@ -73,4 +79,4 @@ it produced a large, signal-independent carrier, so use `bridge_on.m` (the MATLA
 
 ## Status
 
-The ZC706 measurement works. Next: an MXG-to-scope reference measurement, then the same test on ZCU102.
+The ZC706 measurements are done (EVM, reference, gain sweep, phase). Next: the same test on ZCU102.

@@ -9,6 +9,7 @@ from iio_net import IIO
 
 p = argparse.ArgumentParser()
 p.add_argument('--host', default='192.168.0.99')
+p.add_argument('--mxg-pow', type=float, default=None, help='set MXG power [dBm] before the sweep')
 p.add_argument('--rx', type=float, nargs='+', default=[30, 33, 36, 39, 42])
 p.add_argument('--tx', type=float, nargs='+', default=[0, -5, -10, -15])
 p.add_argument('--ch', nargs='+', default=['2', '3'])
@@ -17,7 +18,13 @@ p.add_argument('--csv', default='gain_sweep.csv')
 p.add_argument('--final-rx', type=float, default=36); p.add_argument('--final-tx', type=float, default=-10)
 a = p.parse_args()
 c = IIO(a.host)
-PHY = [d for d in ('iio:device9', 'iio:device10')]
+import re
+PHY = [d for d, n in re.findall(r'<device id="([^"]+)" name="([^"]+)"', c.xml()) if n.startswith('ad9361-phy')]
+print('phy devices:', PHY, flush=True)
+if a.mxg_pow is not None:
+    import pyvisa
+    g = pyvisa.ResourceManager().open_resource(os.environ.get('MXG_ADDR', 'TCPIP0::<MXG_IP>::inst0::INSTR')); g.write(f':POW {a.mxg_pow}'); g.query('*OPC?')
+    print('MXG power', g.query(':POW?').strip(), flush=True)
 
 
 def setg(rx, tx):

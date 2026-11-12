@@ -1,0 +1,12 @@
+[Unit]
+Description=AD-FMCOMMS5 RF bridge (RX -> TX loopback, settings in /etc/fmcomms5-bridge.conf)
+After=local-fs.target systemd-modules-load.service
+Before=iiod.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/fmcomms5-bridge.sh
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target

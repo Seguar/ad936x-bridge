@@ -2,8 +2,8 @@
 % Keeps MATLAB alive (objects not released) so the bridge stays on. Ctrl+C / kill to stop.
 IP = getenv('BOARD_IP'); if isempty(IP), IP = '192.168.0.99'; end
 Fc = str2double(getenv('BRIDGE_FC'));  if isnan(Fc),  Fc = 2e9;    end
-RXg = str2double(getenv('BRIDGE_RXG')); if isnan(RXg), RXg = 36;   end   % 36 dB = best EVM at -47 dBm input (sweep 2026-11-12)
-TXg = str2double(getenv('BRIDGE_TXG')); if isnan(TXg), TXg = -10;  end
+RXg = str2double(getenv('BRIDGE_RXG')); if isnan(RXg), RXg = 35;   end   % best with MXG -30 dBm (~-37 dBm per input), sweep 2026-11-12
+TXg = str2double(getenv('BRIDGE_TXG')); if isnan(TXg), TXg = -25;  end   % TX att -25 dB: lowest loop gain, best EVM
 Fs = 30.72e6;
 tx = sdrtx('FMCOMMS5','IPAddress',IP,'CenterFrequency',Fc,'BasebandSampleRate',Fs, ...
     'ChannelMapping',[1 2 3 4],'Gain',TXg,'ShowAdvancedProperties',true);

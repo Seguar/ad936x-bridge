@@ -28,7 +28,7 @@ adds, first on a **ZC706** carrier and then on a **ZCU102**.
 | `AD/soc_builder.m` | Minimal 4×TX / 4×RX configuration that switches the board into RF RX → RF TX loopback |
 | `AD/test.m` | Basic ZC706 + FMCOMMS5 check with ADI Transceiver Toolbox: 4-channel RX capture + TX tone |
 | `AD/TransceiverToolbox` | Submodule: [analogdevicesinc/TransceiverToolbox](https://github.com/analogdevicesinc/TransceiverToolbox) |
-| `demo/gen_ofdm16qam.m`, `demo/setup_mxg.py`, `demo/bridge_on.m`, `demo/vsa_wlan_evm.py`, `demo/phase_check.py` | EVM demo chain (see below) |
+| `demo/gen_ofdm16qam.m`, `demo/setup_mxg.py`, `demo/bridge_on.m`, `demo/vsa_wlan_evm.py`, `demo/phase_check.py`, `demo/gain_sweep.py`, `demo/range_sweep.py` | EVM demo chain (see below) |
 | `demo/iio_net.py` | Dependency-free libiio **network** client (iiod text protocol, port 30431): read and write AD9361 attributes, debug attributes and registers from Windows with no libiio installed |
 
 Clone with `git clone --recursive`.
@@ -40,8 +40,8 @@ Clone with `git clone --recursive`.
 matlab -batch "cd demo; gen_ofdm16qam"
 # 2. MXG: download + play at 2 GHz, -40 dBm
 set MXG_ADDR=TCPIP0::<MXG_IP>::inst0::INSTR
-py demo/setup_mxg.py --freq 2e9 --pow -40
-# 3. board: bridge on via SoC Builder support package (keeps MATLAB open so the bridge stays on)
+py demo/setup_mxg.py --freq 2e9 --pow -30
+# 3. board: bridge on via SoC Builder support package (RX 35 dB, TX -25 dB; settings stay after MATLAB exits)
 matlab -batch "cd demo; bridge_on"          # env BOARD_IP, BRIDGE_FC, BRIDGE_RXG, BRIDGE_TXG
 # 4. VSA (scope selected as analyzer, SCPI enabled): 802.11a demod, EVM per scope channel
 py demo/vsa_wlan_evm.py --fc 2e9 --ch 1 2 3 4 --n 10 --leave 1
@@ -64,6 +64,12 @@ Results, 2026-11-12: ZC706 + FMCOMMS5 at 2 GHz. MXG at -40 dBm through a 1:4 spl
 * Phase (`demo/phase_check.py`): the offset between the two paths of one chip is fixed (about -10 deg on chip B, about +14 deg on chip A).
   The offset between chip A and chip B jumps in 90 deg steps on every LO retune, so it needs calibration after each tune.
   RX1->TX1 runs one sample (32.7 ns) ahead of RX2->TX2 on both chips.
+
+
+**Optimised setting** (MXG -30 dBm, about -37 dBm per input; RX gain 35 dB; TX attenuation -25 dB; scope locked to the MXG 10 MHz):
+EVM 1.05 / 1.04 / 1.41 / 1.19 % (-39.5 / -39.7 / -37.0 / -38.5 dB) on CH1-CH4, -38.5 dB on average. The direct reference measures -43.2 dB,
+so the relay costs 4.7 dB on average (3.5-6.2 dB), against 9.2 dB at the first setting. EVM follows the loop gain (RX gain minus TX attenuation);
+`demo/gain_sweep.py` maps it and `demo/range_sweep.py` checks the scope range (autorange is within about 1 dB of the best).
 
 `demo/setup_board.py` sets the same LO and `loopback=2` directly over iiod. With RX AGC on, however,
 it produced a large, signal-independent carrier, so use `bridge_on.m` (the MATLAB path) for measurements.

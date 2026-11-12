@@ -3,7 +3,7 @@ usage: py setup_mxg.py [--addr ...] [--freq 2e9] [--pow -40] [--file ofdm16qam_8
 import argparse, os, pyvisa
 p = argparse.ArgumentParser()
 p.add_argument('--addr', default=os.environ.get('MXG_ADDR', 'TCPIP0::<MXG_IP>::inst0::INSTR'))
-p.add_argument('--freq', type=float, default=2e9); p.add_argument('--pow', type=float, default=-40)
+p.add_argument('--freq', type=float, default=2e9); p.add_argument('--pow', type=float, default=-30)
 p.add_argument('--file', default=os.path.join(os.path.dirname(__file__), 'ofdm16qam_80M.bin'))
 p.add_argument('--rate', type=float, default=80e6); p.add_argument('--name', default='OFDM16QAM')
 a = p.parse_args()

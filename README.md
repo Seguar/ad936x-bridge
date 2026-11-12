@@ -58,6 +58,7 @@ Results, 2026-11-12: ZC706 + FMCOMMS5 at 2 GHz. MXG at -40 dBm through a 1:4 spl
 | CH3 | TX2A_A (RX2A_A) | 2.87 % | 1.96 % (-34.1 dB) |
 | CH4 | TX1A_A (RX1A_A) | 2.66 % | 2.06 % (-33.7 dB) |
 
+* With the MXG 10 MHz output driving the scope 10 MHz input (VSA reference External), the frequency error is below 2 Hz (it was 37 Hz before) and EVM is unchanged.
 * Reference with the MXG wired straight to the scope at the same scope level: 0.69 % (-43.2 dB), so the bridge adds about 1.9 % EVM.
 * RX gain sweep: 36 dB is the best setting. Below it, the TX LO leakage dominates; above about 43 dB, the TX path compresses.
 * Phase (`demo/phase_check.py`): the offset between the two paths of one chip is fixed (about -10 deg on chip B, about +14 deg on chip A).

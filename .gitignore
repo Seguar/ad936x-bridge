@@ -13,3 +13,4 @@ __pycache__/
 slprj/
 *.bin
 report/
+tools/write_sd.log

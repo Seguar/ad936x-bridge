@@ -88,6 +88,32 @@ The FMCOMMS5 sits on HPC0 and HPC1 with FMC extenders.
   Only TX2A_B is one sample (32.5 ns) late; on the ZC706 both RX2->TX2 paths were.
 * A signal-independent carrier at the LO appeared once after loopback was set. A reboot plus `setup_board.py` (which re-applies the sample rate) cleared it.
 
+
+### Boot-time bridge and the -4 dBm input case (ZCU102)
+
+`board/zcu102/` holds a systemd service. On every boot it sets both AD9361 to 2 GHz, manual RX gain 8 dB and TX attenuation -20 dB,
+and turns on loopback (settings in `/etc/fmcomms5-bridge.conf`). These are the best settings for an MXG output of -4 dBm, about -11 dBm per RX input:
+**2.0-2.2 % EVM (-33.5 dB) on all four outputs**, checked after a reboot without a PC. Install steps are in `board/zcu102/README.md`.
+The `dhcpcd-fallback.conf` snippet gives the board 192.168.0.99 when no DHCP server answers.
+
+Input level vs. best EVM (ADC level kept constant; `data/zcu102_input_level_sweep.csv`):
+
+| MXG output | about per RX input | best EVM |
+|---|---|---|
+| -30 ... -10 dBm | -37 ... -17 dBm | about 1.0 % (-40 dB) |
+| -7 dBm | -14 dBm | 1.6 % (-36 dB) |
+| -4 dBm | -11 dBm | 2.1 % (-33.5 dB) |
+
+At -11 dBm the AD9361 RX front end compresses on the OFDM peaks even at minimum gain. A 10 dB attenuator in front of the splitter,
+with RX gain 18 dB, would bring the bridge back to about -40 dB EVM.
+
+## Tools and data
+
+| Path | What |
+|---|---|
+| `tools/write_sd.ps1` | Write an SD-card image (e.g. ADI Kuiper) to a USB card reader on Windows (admin), with disk safety checks |
+| `data/*.csv` | Raw sweeps (RX gain x TX attenuation, input level, scope-to-output phase) for ZC706 and ZCU102 |
+
 ## Notes from bring-up
 
 * After boot both AD9361s come up at 2.4 GHz with `loopback = 0` and the DAC source set to DDS

@@ -74,6 +74,20 @@ so the relay costs 4.7 dB on average (3.5-6.2 dB), against 9.2 dB at the first s
 `demo/setup_board.py` sets the same LO and `loopback=2` directly over iiod. With RX AGC on, however,
 it produced a large, signal-independent carrier, so use `bridge_on.m` (the MATLAB path) for measurements.
 
+
+## ZCU102 + FMCOMMS5
+
+There is no MathWorks FMCOMMS5 image for ZCU102, so the board runs ADI Kuiper 2023_R2 (image 2025-03-18). Copy
+`zynqmp-zcu102-rev10-ad9361-fmcomms5/BOOT.BIN`, its `system.dtb` and `zynqmp-common/Image` to the BOOT partition root, and set SW6 to SD boot.
+The FMCOMMS5 sits on HPC0 and HPC1 with FMC extenders.
+
+* Console: CP2108 interface 0 at 115200 baud. `demo/zcu_console.py "cmd" ...` runs shell commands over it.
+* Network: dhcpcd falls back to 192.168.0.99/24 when no DHCP answers (profile appended to /etc/dhcpcd.conf).
+* Bridge without MATLAB: `py demo/setup_board.py --host 192.168.0.99 --lo 2e9 --rxgain 35 --txatt -25`.
+* Result: EVM 1.01-1.06 % (-39.7 dB mean) at the same settings as the ZC706 (-38.5 dB). Phase inside each chip is fixed; between the chips it jumps in 90 deg steps on every retune.
+  Only TX2A_B is one sample (32.5 ns) late; on the ZC706 both RX2->TX2 paths were.
+* A signal-independent carrier at the LO appeared once after loopback was set. A reboot plus `setup_board.py` (which re-applies the sample rate) cleared it.
+
 ## Notes from bring-up
 
 * After boot both AD9361s come up at 2.4 GHz with `loopback = 0` and the DAC source set to DDS
@@ -86,4 +100,4 @@ it produced a large, signal-independent carrier, so use `bridge_on.m` (the MATLA
 
 ## Status
 
-The ZC706 measurements are done (EVM, reference, gain sweep, phase). Next: the same test on ZCU102.
+The ZC706 measurements are done (EVM, reference, gain sweep, phase). ZCU102 done as well (see above).
